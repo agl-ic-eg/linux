@@ -621,7 +621,7 @@ const char *rcar_du_output_name(enum rcar_du_output output)
 DEFINE_DRM_GEM_DMA_FOPS(rcar_du_fops);
 
 static const struct drm_driver rcar_du_driver = {
-	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
+	.driver_features	= DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC | DRIVER_RENDER,
 	.dumb_create		= rcar_du_dumb_create,
 	.gem_prime_import_sg_table = rcar_du_gem_prime_import_sg_table,
 	.fops			= &rcar_du_fops,
