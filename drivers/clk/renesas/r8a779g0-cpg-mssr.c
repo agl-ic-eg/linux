@@ -239,8 +239,13 @@ static const struct mssr_mod_clk r8a779g0_mod_clks[] __initconst = {
 	DEF_MOD("pfc3",		918,	R8A779G0_CLK_CP),
 	DEF_MOD("tsc",		919,	R8A779G0_CLK_CL16M),
 	DEF_MOD("tsn",		2723,	R8A779G0_CLK_S0D4_HSC),
+	DEF_MOD("dsc",		2819,	R8A779G0_CLK_VIOBUSD2),
 	DEF_MOD("ssiu",		2926,	R8A779G0_CLK_S0D6_PER),
 	DEF_MOD("ssi",		2927,	R8A779G0_CLK_S0D6_PER),
+};
+
+static const unsigned int r8a779g0_crit_mod_clks[] __initconst = {
+	MOD_CLK_ID(2819),	/* DSC */
 };
 
 /*
@@ -296,6 +301,10 @@ const struct cpg_mssr_info r8a779g0_cpg_mssr_info __initconst = {
 	.mod_clks = r8a779g0_mod_clks,
 	.num_mod_clks = ARRAY_SIZE(r8a779g0_mod_clks),
 	.num_hw_mod_clks = 30 * 32,
+
+	/* Critical Module Clocks */
+	.crit_mod_clks = r8a779g0_crit_mod_clks,
+	.num_crit_mod_clks = ARRAY_SIZE(r8a779g0_crit_mod_clks),
 
 	/* Callbacks */
 	.init = r8a779g0_cpg_mssr_init,
