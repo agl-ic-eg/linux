@@ -30,6 +30,13 @@
 
 /dts-v1/;
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/media/video-interfaces.h>
+
+/* Enable this if there is a camera module in J1. */
+#define CAM_J1 1
+
+/* Enable this if there is a camera module in J2. */
+#define CAM_J2 1
 
 #include "r8a779g3.dtsi"
 
@@ -122,6 +129,20 @@
 		};
 	};
 
+	clk_cam_j1: clk_cam_j1 {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <24000000>;
+		status = "okay";
+	};
+
+	clk_cam_j2: clk_cam_j2 {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <24000000>;
+		status = "okay";
+	};
+
 	/* Page 26 / PCIe.0/1 CLK */
 	pcie_refclk: clk-x8 {
 		compatible = "fixed-clock";
@@ -154,6 +175,36 @@
 		regulator-max-microvolt = <3300000>;
 		regulator-boot-on;
 		regulator-always-on;
+	};
+
+	/* Page 29 / CSI_IF_CN / J1 */
+	reg_cam_j1: reg_cam_j1 {
+		compatible = "regulator-fixed";
+		regulator-name = "reg_cam_j1";
+		enable-active-high;
+		status = "okay";
+		gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
+	};
+
+	reg_cam_j1_dummy: reg_cam_j1_dummy {
+		compatible = "regulator-fixed";
+		regulator-name = "cam-dummy-reg-j1";
+		status = "okay";
+	};
+
+	/* Page 29 / CSI_IF_CN / J2 */
+	reg_cam_j2: reg_cam_j2 {
+		compatible = "regulator-fixed";
+		regulator-name = "reg_cam_j2";
+		enable-active-high;
+		status = "okay";
+		gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+	};
+
+	reg_cam_j2_dummy: reg_cam_j2_dummy {
+		compatible = "regulator-fixed";
+		regulator-name = "cam-dummy-reg-j2";
+		status = "okay";
 	};
 
 	/* Page 27 / DSI to Display */
@@ -427,6 +478,34 @@
 	#size-cells = <0>;
 	pinctrl-0 = <&i2c1_pins>;
 	pinctrl-names = "default";
+#if CAM_J1
+	status = "okay";
+
+	imx219_j1: imx219@10 {
+		compatible = "sony,imx219";
+		reg = <0x10>;
+		status = "okay";
+
+		clocks = <&clk_cam_j1>;
+		clock-names = "xclk";
+
+		VANA-supply = <&reg_cam_j1>;
+		VDIG-supply = <&reg_cam_j1_dummy>;
+		VDDL-supply = <&reg_cam_j1_dummy>;
+
+		orientation = <2>;
+		rotation = <0>;
+
+		port {
+			rpicam_j1: endpoint {
+				clock-noncontinuous;
+				link-frequencies = /bits/ 64 <456000000>;
+				data-lanes = <1 2>;
+				remote-endpoint = <&csi40_in>;
+			};
+		};
+	};
+#endif
 };
 
 /* Page 29 / CSI_IF_CN / CAM_CN1 */
@@ -435,6 +514,34 @@
 	#size-cells = <0>;
 	pinctrl-0 = <&i2c2_pins>;
 	pinctrl-names = "default";
+#if CAM_J2
+	status = "okay";
+
+	imx219_j2: imx462@1a {
+		compatible = "sony,imx462lqr";
+		reg = <0x1a>;
+		status = "okay";
+
+		clocks = <&clk_cam_j2>;
+		clock-names = "xclk";
+		clock-frequency = <37125000>;
+
+		vdddo-supply = <&reg_cam_j2>;
+		vdda-supply = <&reg_cam_j2_dummy>;
+		vddd-supply = <&reg_cam_j2_dummy>;
+
+		orientation = <2>;
+		rotation = <0>;
+
+		port {
+			rpicam_j2: endpoint {
+				link-frequencies = /bits/ 64 <222750000 148500000>;
+				data-lanes = <1 2 3 4>;
+				remote-endpoint = <&csi41_in>;
+			};
+		};
+	};
+#endif
 };
 
 /* Page 31 / IO_CN */
@@ -781,3 +888,120 @@
 &scif_clk {	/* X12 */
 	clock-frequency = <24000000>;
 };
+
+#if CAM_J1
+/* Page 29 / CSI_IF_CN */
+&csi40 {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+
+			csi40_in: endpoint {
+				bus-type = <MEDIA_BUS_TYPE_CSI2_DPHY>;
+				clock-lanes = <0>;
+				data-lanes = <1 2>;
+				remote-endpoint = <&rpicam_j1>;
+			};
+		};
+	};
+};
+
+&isp0 {
+	status = "okay";
+};
+
+&vin00 {
+	status = "okay";
+};
+
+&vin01 {
+        status = "okay";
+};
+
+&vin02 {
+        status = "okay";
+};
+
+&vin03 {
+        status = "okay";
+};
+
+&vin04 {
+        status = "okay";
+};
+
+&vin05 {
+        status = "okay";
+};
+
+&vin06 {
+        status = "okay";
+};
+
+&vin07 {
+	status = "okay";
+};
+#endif
+
+#if CAM_J2
+/* Page 29 / CSI_IF_CN */
+&csi41 {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+
+			csi41_in: endpoint {
+				bus-type = <MEDIA_BUS_TYPE_CSI2_DPHY>;
+				clock-lanes = <0>;
+				data-lanes = <1 2 3 4>;
+				remote-endpoint = <&rpicam_j2>;
+			};
+		};
+	};
+};
+&isp1 {
+	status = "okay";
+};
+
+&vin08 {
+	status = "okay";
+};
+
+&vin09 {
+	status = "okay";
+};
+
+&vin10 {
+	status = "okay";
+};
+
+&vin11 {
+	status = "okay";
+};
+
+&vin12 {
+	status = "okay";
+};
+
+&vin13 {
+	status = "okay";
+};
+
+&vin14 {
+	status = "okay";
+};
+
+&vin15 {
+	status = "okay";
+};
+#endif
