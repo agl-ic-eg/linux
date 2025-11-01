@@ -269,6 +269,20 @@
 	};
 };
 
+&dsi0 {
+	status = "okay";
+
+	ports {
+		port@1 {
+			reg = <1>;
+			dsi0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
+};
+
 /* Page 27 / DSI to Display */
 &dsi1 {
 	status = "okay";
@@ -453,6 +467,24 @@
 			reg = <3>;
 			#address-cells = <1>;
 			#size-cells = <0>;
+
+			touch2: ilitek@41 {
+				compatible = "ilitek,ili251x";
+				reg = <0x41>;
+				status = "okay";
+			};
+
+			panel: panel_disp1@45 {
+				reg = <0x45>;
+				compatible = "waveshare,13.3inch-4lane-panel";
+				status = "okay";
+
+				port {
+					panel_in: endpoint {
+						remote-endpoint = <&dsi0_out>;
+					};
+				};
+			};
 		};
 	};
 };
