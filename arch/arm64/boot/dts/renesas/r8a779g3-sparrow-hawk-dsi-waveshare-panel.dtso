@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+/*
+ * Device Tree Overlay for Waveshare DSI Touchscreens connected to J4:DSI
+ * on R-Car V4H ES3.0 Sparrow Hawk board
+ *
+ * Copyright (C) 2025 Naoto Yamaguchi <naoto.yamaguchi@aisin.co.jp>
+ *
+ */
+
+/dts-v1/;
+/plugin/;
+
+&i2c0_mux3 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	touch2: ilitek@41 {
+		compatible = "ilitek,ili251x";
+		reg = <0x41>;
+		status = "okay";
+	};
+
+	panel: panel_disp1@45 {
+		reg = <0x45>;
+		compatible = "waveshare,13.3inch-4lane-panel";
+		status = "okay";
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi0_out>;
+			};
+		};
+	};
+};
+
+&dsi0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	ports {
+		port@1 {
+			reg = <1>;
+
+			dsi0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
+};
